@@ -79,36 +79,64 @@ async function run() {
                     console.log("trying")
                     if (each.children) {
                         const length = await each.children.length
-                        if (length == 0) {
+                        console.log(length)
+                        const left = each.children[0].leftChild
+                        console.log(left)
+                        const middle = each.children[1].middleChild
+                        const right = each.children[2].rightChild
+                        if (left == null) {
+                            console.log("trying_1")
                             //update left
-                            let left = each.children[0].leftChild
-                            const queryUser = each.userId
-                            const update = await clickedUsers.updateOne(queryUser,{ $set: { left : newUserid }}) 
-                            res.send(update)
+                            // let left = each.children[0].leftChild
+                            
+                            const queryUser = { userId: each.userId, "children.leftChild": null };
+                            console.log(queryUser)
+                            const updateField = { $set: { "children.0.leftChild": newUserid } };
+                            const options = {upsert: false };
+
+                            const update = await clickedUsers.updateOne(queryUser, updateField, options);
+
                             //insert
                             const result = await clickedUsers.insertOne(newUserid)
                             res.send(result)
                             return
                         }
-                        else if (length == 1) {
+                        else if (middle == null) {
+                            console.log("trying_2")
                             //update middle
-                            let middle = each.children[1].middleChild
-                            const update = { $set: { middle : newUserid } }
+                            // let middle = each.children[1].middleChild
+
+                             const queryUser = { userId: each.userId};
+                            console.log(queryUser)
+                            const updateField = { $set: { "children.1.middleChild": newUserid } };
+                            const options = {upsert: false };
+
+                            const update = await clickedUsers.updateOne(queryUser, updateField, options);
+
                             //insert
                             const result = await clickedUsers.insertOne(newUserid)
                             res.send(result)
                             return
                         }
-                        else if (length == 2) {
-                              //update right
-                              let right = each.children[2].rightChild
-                              const update = { $set: { right : newUserid } }
-                              //insert
-                              const result = await clickedUsers.insertOne(newUserid)
-                              res.send(result)
-                              return
+                        else if (right == null) {
+                            console.log("trying_3")
+                            //update right
+                            //   let right = each.children[2].rightChild
+
+                            const queryUser = { userId: each.userId, "children.rightChild": null };
+                            console.log(queryUser)
+                            const updateField = { $set: { "children.2.rightChild": newUserid } };
+                            const options = {upsert: false };
+
+                            const update = await clickedUsers.updateOne(queryUser, updateField, options);
+
+                            //insert
+                            const result = await clickedUsers.insertOne(newUserid)
+                            res.send(result)
+                            return
                         }
                         else {
+                            console.log("trying_null")
                             continue;
                         }
                     }
