@@ -54,49 +54,71 @@ async function run() {
 
         // clicked users api
 
+
         app.post('/clickedusers', async (req, res) => {
             const newUserid = req.body
             console.log(newUserid)
-            const query = { userId: newUserid.userId }
-            const parentUser = await clickedUsers.findOne(query)
-            console.log(parentUser)
+            // const query = { userId: newUserid.userId }
+            // const parentUser = await clickedUsers.findOne(query)
+            // console.log(parentUser)
 
-            if (parentUser) {
-                // Check
-                if (parentUser.leftChild && parentUser.middleChild && parentUser.rightChild) {
-                    console.log('Parent user already has maximum children.');
-                    res.status(400).send({ error: 'Parent user already has maximum children.' });
-                    return;
+            // const result = await clickedUsers.insertOne(newUserid)
+            // res.send(result)
+            const query = { _id: { $exists: true } }
+            const previousClickedUsers = await clickedUsers.find(query).toArray()
+
+            if (previousClickedUsers.length == 0) {
+                const result = await clickedUsers.insertOne(newUserid)
+                res.send(result)
+                console.log("first user")
+                return
+            }
+            else {
+
+                for (const each of previousClickedUsers) {
+                    console.log("trying")
+                    if (each.children) {
+                        const length = await each.children.length
+                        if (length == 0) {
+                            //update left
+                            let left = each.children[0].leftChild
+                            const queryUser = each.userId
+                            const update = await clickedUsers.updateOne(queryUser,{ $set: { left : newUserid }}) 
+                            res.send(update)
+                            //insert
+                            const result = await clickedUsers.insertOne(newUserid)
+                            res.send(result)
+                            return
+                        }
+                        else if (length == 1) {
+                            //update middle
+                            let middle = each.children[1].middleChild
+                            const update = { $set: { middle : newUserid } }
+                            //insert
+                            const result = await clickedUsers.insertOne(newUserid)
+                            res.send(result)
+                            return
+                        }
+                        else if (length == 2) {
+                              //update right
+                              let right = each.children[2].rightChild
+                              const update = { $set: { right : newUserid } }
+                              //insert
+                              const result = await clickedUsers.insertOne(newUserid)
+                              res.send(result)
+                              return
+                        }
+                        else {
+                            continue;
+                        }
+                    }
                 }
 
-                //left child
-                if (!parentUser.leftChild) {
-                    const result = await clickedUsers.updateOne(query, { $push: { leftChild: newUserid.userId } });
-                    console.log('User added as left child to existing parent:', newUserid);
-                    res.send(result);
-                    return;
-                }
 
-                //middle child
-                if (!parentUser.middleChild) {
-                    const result = await clickedUsers.updateOne(query, { $push: { middleChild: newUserid.userId } });
-                    console.log('User added as middle child to existing parent:', newUserid);
-                    res.send(result);
-                    return;
-                }
-
-                //right child
-                if (!parentUser.rightChild) {
-                    const result = await clickedUsers.updateOne(query, { $push: { rightChild: newUserid.userId } });
-                    console.log('User added as right child to existing parent:', newUserid);
-                    res.send(result);
-                    return;
-                }
             }
 
 
-            const result = await clickedUsers.insertOne(newUserid)
-            res.send(result)
+
         })
 
         app.get('/clickedusers', async (req, res) => {
@@ -130,6 +152,7 @@ async function run() {
 
         //     // res.send(previousUsers)
         // })
+
 
 
 
