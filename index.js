@@ -57,42 +57,35 @@ async function run() {
 
         app.post('/clickedusers', async (req, res) => {
             const newUserid = req.body
-            console.log(newUserid)
-            // const query = { userId: newUserid.userId }
-            // const parentUser = await clickedUsers.findOne(query)
-            // console.log(parentUser)
-
-            // const result = await clickedUsers.insertOne(newUserid)
-            // res.send(result)
             const query = { _id: { $exists: true } }
             const previousClickedUsers = await clickedUsers.find(query).toArray()
 
             if (previousClickedUsers.length == 0) {
                 const result = await clickedUsers.insertOne(newUserid)
                 res.send(result)
-                console.log("first user")
+                
                 return
             }
             else {
 
                 for (const each of previousClickedUsers) {
-                    console.log("trying")
+                    
                     if (each.children) {
                         const length = await each.children.length
-                        console.log(length)
+
                         const left = each.children[0].leftChild
-                        console.log(left)
+
                         const middle = each.children[1].middleChild
                         const right = each.children[2].rightChild
                         if (left == null) {
-                            console.log("trying_1")
+                           
                             //update left
                             // let left = each.children[0].leftChild
-                            
+
                             const queryUser = { userId: each.userId, "children.leftChild": null };
-                            console.log(queryUser)
+
                             const updateField = { $set: { "children.0.leftChild": newUserid } };
-                            const options = {upsert: false };
+                            const options = { upsert: false };
 
                             const update = await clickedUsers.updateOne(queryUser, updateField, options);
 
@@ -102,14 +95,14 @@ async function run() {
                             return
                         }
                         else if (middle == null) {
-                            console.log("trying_2")
+                            
                             //update middle
                             // let middle = each.children[1].middleChild
 
-                             const queryUser = { userId: each.userId};
-                            console.log(queryUser)
+                            const queryUser = { userId: each.userId };
+
                             const updateField = { $set: { "children.1.middleChild": newUserid } };
-                            const options = {upsert: false };
+                            const options = { upsert: false };
 
                             const update = await clickedUsers.updateOne(queryUser, updateField, options);
 
@@ -119,14 +112,14 @@ async function run() {
                             return
                         }
                         else if (right == null) {
-                            console.log("trying_3")
+                            
                             //update right
                             //   let right = each.children[2].rightChild
 
                             const queryUser = { userId: each.userId, "children.rightChild": null };
-                            console.log(queryUser)
+
                             const updateField = { $set: { "children.2.rightChild": newUserid } };
-                            const options = {upsert: false };
+                            const options = { upsert: false };
 
                             const update = await clickedUsers.updateOne(queryUser, updateField, options);
 
