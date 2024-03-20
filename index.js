@@ -80,7 +80,7 @@ async function run() {
                         if (left == null) {
                            
                             //update left
-                            // let left = each.children[0].leftChild
+                            
 
                             const queryUser = { userId: each.userId, "children.leftChild": null };
 
@@ -97,7 +97,7 @@ async function run() {
                         else if (middle == null) {
                             
                             //update middle
-                            // let middle = each.children[1].middleChild
+                           
 
                             const queryUser = { userId: each.userId };
 
@@ -114,7 +114,7 @@ async function run() {
                         else if (right == null) {
                             
                             //update right
-                            //   let right = each.children[2].rightChild
+                            
 
                             const queryUser = { userId: each.userId, "children.rightChild": null };
 
